@@ -1,5 +1,5 @@
 import win32com.client
-
+from pathlib import Path
 
 class ShadowCopy(object):
     def __init__(self, drive_letters):
@@ -18,14 +18,10 @@ class ShadowCopy(object):
         Takes a regular file system path and transforms it into an
         equivalent path in a shadow copy
         '''
-        drive_letter = path[0]
-        if drive_letter in self.__drive_letters:
-            new_path = path.replace(drive_letter + ':',
-                                    self.__shadow_paths[drive_letter],
-                                    1)
-            if new_path == path:
-                raise Exception("Problem processing path: {0}".format(path))
-            return new_path
+        full_path = Path(path).resolve()
+        if full_path.drive[0] in self.__drive_letters:
+            rel_path = full_path.relative_to(full_path.drive + '/')
+            return Path(self.__shadow_paths[full_path.drive[0]]).joinpath(rel_path)
         else:
             raise Exception("Shadow copy not found for requested drive")
 
